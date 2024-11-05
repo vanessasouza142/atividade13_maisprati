@@ -20,6 +20,10 @@ import java.util.HashMap; // Implementação da interface Map, usada para armaze
 import java.util.Map; // Interface que define um mapa (associação de chave-valor) no Java.
 import java.util.function.Function; // Interface funcional que aplica uma transformação a um dado e retorna um resultado.
 
+import com.example.api_user.model.User;
+import com.example.api_user.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+
 // Anotação @Component:
 // - Indica que essa classe é um bean Spring e será gerenciada pelo contêiner de IoC.
 // - Permite que o Spring injete essa classe em outros componentes ou serviços.
@@ -31,10 +35,17 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secretKey;
 
+    @Autowired
+    UserRepository repository;
+
     // Método para extrair o nome de usuário (subject) do token JWT.
     // Utiliza o método extractClaim para pegar a "claim" que contém o subject (nome de usuário).
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractId(String token){
+        return extractClaim(token, Claims::getId);
     }
 
     // Método genérico para extrair qualquer "claim" do token.
@@ -59,13 +70,14 @@ public class JwtTokenProvider {
         Map<String, Object> claims = new HashMap<>();
 
         // Chama o método createToken para gerar o token JWT, passando as claims e o nome de usuário.
-        return createToken(claims, userDetails.getUsername());
+        User user = repository.findByUsername(userDetails.getUsername());
+        return createToken(claims, userDetails.getUsername(), String.valueOf(user.getId()));
     }
 
     // Método privado para criar o token JWT.
     // - claims: Mapa de declarações (claims) a serem incluídas no token.
     // - subject: O assunto (subject), geralmente o nome de usuário.
-    private String createToken(Map<String, Object> claims, String subject) {
+    private String createToken(Map<String, Object> claims, String subject, String id) {
         // Cria o token JWT configurando:
         // - claims: Informações adicionais no token.
         // - subject: Nome de usuário (subject do token).
@@ -74,6 +86,7 @@ public class JwtTokenProvider {
         // - signWith: Algoritmo de assinatura (HS256) e chave secreta para assinar o token.
         return Jwts.builder()
                 .setClaims(claims)
+                .setId(id)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis())) // Data de emissão
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // Expiração: 10 horas

@@ -72,6 +72,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Extrai o nome de usuário (username) do token JWT usando o jwtTokenProvider.
         String username = jwtTokenProvider.extractUsername(jwt);
 
+        // Extrai o id do usuário do token JWT usando o jwtTokenProvider.
+        String id = jwtTokenProvider.extractId(jwt);
+
         // Inicializa o objeto UserDetails como null.
         UserDetails userDetails = null;
 
@@ -79,6 +82,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // Carrega os detalhes do usuário a partir do nome de usuário extraído do token.
             userDetails = userDetailsService.loadUserByUsername(username);
+        }
+
+        // Se o id do usuário for válido e não houver autenticação já ativa no contexto de segurança...
+        if (id != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            // Carrega os detalhes do usuário a partir do nome de usuário extraído do token.
+            userDetails = userDetailsService.loadUserById(id);
         }
 
         // Verifica se o token é válido e se o usuário carregado é o correto.

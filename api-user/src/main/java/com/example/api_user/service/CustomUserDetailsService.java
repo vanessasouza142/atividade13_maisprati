@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails; // Interface q
 import org.springframework.security.core.userdetails.UserDetailsService; // Interface que define um serviço que carrega dados do usuário para autenticação.
 import org.springframework.security.core.userdetails.UsernameNotFoundException; // Exceção lançada quando o nome de usuário não é encontrado.
 import org.springframework.stereotype.Service; // Anotação que marca a classe como um serviço gerenciado pelo Spring.
+import java.util.Optional;
 
 // Anotação @Service:
 // - Indica que esta classe é um **serviço** do Spring, que contém lógica de negócios.
@@ -44,5 +45,17 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .withUsername(user.getUsername()) // Define o nome de usuário
                 .password(user.getPassword()) // Define a senha (criptografada) do usuário
                 .build(); // Constrói o objeto UserDetails
+    }
+
+    public UserDetails loadUserById(String id) throws UsernameNotFoundException{
+        int castedId = Integer.valueOf(id);
+        Optional<User> optionalUser = userRepository.findById(castedId);
+        if(!optionalUser.isPresent()){
+            throw new UsernameNotFoundException("Usuario com ID não encontrado: " + castedId + " | " + id);
+        }
+        User user = optionalUser.get();
+        return org.springframework.security.core.userdetails.User
+                .withUsername(user.getUsername())
+                .password(user.getPassword()).build();
     }
 }
