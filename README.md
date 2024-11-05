@@ -1,4 +1,4 @@
-# Atividade 13 - Soluçãode Problemas Envolvendo o JWT
+# Atividade 13 - Solução de Problemas Envolvendo o JWT
 ## Descrição
 A descrição da tarefa é bastante simples:
 
